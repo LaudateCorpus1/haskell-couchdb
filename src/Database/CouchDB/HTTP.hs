@@ -2,6 +2,7 @@
 -- CouchDB enjoys closing the connection if there is an error (document
 -- not found, etc.)  In such cases, 'CouchMonad' will automatically
 -- reestablish the connection.
+{-# LANGUAGE CPP #-}
 module Database.CouchDB.HTTP 
   ( request
   , RequestMethod (..)
@@ -64,6 +65,9 @@ instance Monad CouchMonad where
     let (CouchMonad m') = k a
     m' conn'
 
+#if MIN_VERSION_base(4,13,0)
+instance MonadFail CouchMonad where
+#endif
   fail msg = CouchMonad $ \conn -> do
     fail $ "internal error: " ++ msg   
 
