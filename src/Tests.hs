@@ -93,15 +93,19 @@ people = [ Age "Arjun" 18, Age "Alex" 17 ]
 testNamedDocs = testWithDB "add named documents" $ \mydb -> do
   newNamedDoc mydb (doc "arjun") (people !! 0)
   newNamedDoc mydb (doc "alex") (people !! 1)
-  Just (_,_,v1) <- getDoc mydb (doc "arjun")
-  Just (_,_,v2) <- getDoc mydb (doc "alex") 
-  return $ (v1 == people !! 0) && (v2 == people !! 1)
+  jv1 <- getDoc mydb (doc "arjun")
+  jv2 <- getDoc mydb (doc "alex")
+  case (jv1,jv2) of
+    (Just (_,_,v1), Just (_,_,v2)) ->
+      return $ (v1 == people !! 0) && (v2 == people !! 1)
+    _ -> error "impossible"
 
 testUTF8 = testWithDB "test UTF8 characters" $ \db -> do
   newNamedDoc db (doc "d0") (Age "äöüß" 900)
-  Just (_, _, d) <- getDoc db (doc "d0")
-  return (ageName d == "äöüß")
-
+  jd <- getDoc db (doc "d0")
+  case jd of
+    Just (_, _, d) -> return (ageName d == "äöüß")
+    _ -> error "impossible"
   
 allTests = TestList [ testCreate, testNamedDocs, testUTF8 ]
 
